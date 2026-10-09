@@ -6,14 +6,16 @@ import os
 USERNAME = "binancezh"
 DING_WEBHOOK = os.getenv("DING_WEBHOOK")
 RECORD_FILE = "last_id.json"
-# FxTwitter接口，Github Action可以访问
 API_URL = f"https://api.fxtwitter.com/{USERNAME}"
 # ======================================================
 
 def get_newest_tweet():
     try:
+        print(f"正在请求地址: {API_URL}")
         resp = requests.get(API_URL, timeout=15)
+        print(f"http状态码: {resp.status_code}")
         data = resp.json()
+        print(f"接口返回原始数据：{data}")
         if data and data.get("tweets") and len(data["tweets"]) > 0:
             latest = data["tweets"][0]
             tweet_id = latest["id"]
@@ -21,9 +23,10 @@ def get_newest_tweet():
             link = latest["url"]
             return tweet_id, tweet_text, link
         else:
+            print("接口返回数据里没有tweets数组")
             return None, None, None
     except Exception as e:
-        print(f"请求出错：{e}")
+        print(f"请求出错详细信息：{e}")
         return None, None, None
 
 
