@@ -1,25 +1,31 @@
-import feedparser
 import requests
 import json
 import os
 
-# ==========配置区 博主binancezh，更换新镜像==========
+# ==========配置区==========
 USERNAME = "binancezh"
 DING_WEBHOOK = os.getenv("DING_WEBHOOK")
 RECORD_FILE = "last_id.json"
-# 新镜像
-RSS_URL = f"https://nitter.privacydev.net/{USERNAME}/rss"
+# FxTwitter接口，Github Action可以访问
+API_URL = f"https://api.fxtwitter.com/{USERNAME}"
 # ======================================================
 
 def get_newest_tweet():
-    feed = feedparser.parse(RSS_URL)
-    if not feed.entries:
+    try:
+        resp = requests.get(API_URL, timeout=15)
+        data = resp.json()
+        if data and data.get("tweets") and len(data["tweets"]) > 0:
+            latest = data["tweets"][0]
+            tweet_id = latest["id"]
+            tweet_text = latest["text"]
+            link = latest["url"]
+            return tweet_id, tweet_text, link
+        else:
+            return None, None, None
+    except Exception as e:
+        print(f"请求出错：{e}")
         return None, None, None
-    latest = feed.entries[0]
-    tweet_id = latest.id
-    tweet_text = latest.summary
-    link = latest.link
-    return tweet_id, tweet_text, link
+
 
 def send_ding(tweet_content, tweet_link):
     msg = {
@@ -32,6 +38,7 @@ def send_ding(tweet_content, tweet_link):
     res = requests.post(DING_WEBHOOK, json=msg)
     print("钉钉返回信息：", res.text)
 
+
 def main():
     try:
         with open(RECORD_FILE, "r", encoding="utf-8") as f:
@@ -41,7 +48,7 @@ def main():
 
     tweet_id, tweet_content, link = get_newest_tweet()
     if tweet_id is None:
-        print("RSS读取失败或暂无推文")
+        print("读取失败或暂无推文")
         return
 
     if tweet_id != last_data["last_tweet_id"]:
@@ -52,6 +59,7 @@ def main():
         print("✅检测到新推文，已经推送钉钉")
     else:
         print("暂无新推文")
+
 
 if __name__ == "__main__":
     main()
