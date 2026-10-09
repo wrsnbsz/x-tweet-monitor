@@ -3,13 +3,13 @@ import requests
 import json
 import os
 
-# ==========配置区 已经填好博主binancezh，不用修改==========
+# ==========配置区 已经填好博主binancezh，并且切换poast镜像==========
 USERNAME = "binancezh"
 DING_WEBHOOK = os.getenv("DING_WEBHOOK")
 RECORD_FILE = "last_id.json"
-RSS_URL = f"https://nitter.net/{USERNAME}/rss"
-# 如果nitter.net连不上，把上面一行加#注释，启用下面这行镜像
-# RSS_URL = f"https://nitter.poast.org/{USERNAME}/rss"
+# 已切换可用镜像
+# RSS_URL = f"https://nitter.net/{USERNAME}/rss"
+RSS_URL = f"https://nitter.poast.org/{USERNAME}/rss"
 # ======================================================
 
 def get_newest_tweet():
@@ -47,8 +47,9 @@ def main():
 
     if tweet_id != last_data["last_tweet_id"]:
         send_ding(tweet_content, link)
+        last_data["last_tweet_id"] = tweet_id
         with open(RECORD_FILE, "w", encoding="utf-8") as f:
-            json.dump({"last_tweet_id": tweet_id}, f)
+            json.dump(last_data, f)
         print("✅检测到新推文，已经推送钉钉")
     else:
         print("暂无新推文")
