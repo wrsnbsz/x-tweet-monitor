@@ -2,8 +2,8 @@ import requests
 import json
 import os
 
-# ==========配置区==========
-USERNAME = "binancezh"
+# ==========你的X账号 algo1145 ==========
+USERNAME = "algo1145"
 DING_WEBHOOK = os.getenv("DING_WEBHOOK")
 RECORD_FILE = "last_id.json"
 API_URL = f"https://api.fxtwitter.com/{USERNAME}"
@@ -34,7 +34,7 @@ def send_ding(tweet_content, tweet_link):
     msg = {
         "msgtype": "markdown",
         "markdown": {
-            "title": "🔥binancezh 新推文",
+            "title": "🔥algo1145 新推文",
             "text": f"**推文内容：**\n{tweet_content}\n\n🔗链接：{tweet_link}"
         }
     }
