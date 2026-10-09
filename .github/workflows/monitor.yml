@@ -1,0 +1,29 @@
+name: X(Twitter)推文监控推钉钉
+on:
+  schedule:
+    - cron: '*/10 * * * *'
+  workflow_dispatch:
+
+jobs:
+  run:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    steps:
+      - name: 拉取仓库全部代码文件
+        uses: actions/checkout@v4
+        with:
+          persist-credentials: true
+
+      - name: 安装Python环境
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+
+      - name: 安装需要的工具包
+        run: pip install requests feedparser
+
+      - name: 执行推文监控脚本
+        env:
+          DING_WEBHOOK: ${{ secrets.DING_WEBHOOK }}
+        run: python monitor.py
