@@ -1,32 +1,36 @@
 import requests
 import json
 import os
+from xml.etree import ElementTree
 
-# ==========你的X账号 algo1145 ==========
+# ==========配置信息，你的账号algo1145==========
 USERNAME = "algo1145"
 DING_WEBHOOK = os.getenv("DING_WEBHOOK")
 RECORD_FILE = "last_id.json"
-# 正确接口：获取用户推文列表
-API_URL = f"https://api.fxtwitter.com/user/{USERNAME}/tweets"
-# ======================================================
+# RSSHub公开实例，获取X账号RSS
+RSS_URL = f"https://rsshub.app/twitter/user/{USERNAME}"
 
 def get_newest_tweet():
     try:
-        print(f"正在请求地址: {API_URL}")
-        resp = requests.get(API_URL, timeout=20)
+        print(f"正在请求RSS地址: {RSS_URL}")
+        resp = requests.get(RSS_URL, timeout=20)
         print(f"http状态码: {resp.status_code}")
-        data = resp.json()
-        print(f"接口返回原始数据：{data}")
-        # 推文在data数组里面
-        if data and "data" in data and len(data["data"]) > 0:
-            latest = data["data"][0]
-            tweet_id = latest["id"]
-            tweet_text = latest["text"]
-            tweet_link = f"https://x.com/{USERNAME}/status/{tweet_id}"
-            return tweet_id, tweet_text, tweet_link
-        else:
-            print("接口没有抓到推文data数组")
+        if resp.status_code != 200:
+            print("RSS请求失败")
             return None, None, None
+        #解析xml
+        root = ElementTree.fromstring(resp.content)
+        #xml命名空间
+        ns = {"atom": "http://www.w3.org/2005/Atom"}
+        items = root.findall(".//atom:entry", ns)
+        if len(items) ==0:
+            print("没有抓到推文条目")
+            return None, None, None
+        latest_item = items[0]
+        tweet_id = latest_item.find("./atom:id", ns).text
+        tweet_text = latest_item.find("./atom:title", ns).text
+        tweet_link = latest_item.find("./atom:link", ns).attrib["href"]
+        return tweet_id, tweet_text, tweet_link
     except Exception as e:
         print(f"请求出错详细信息：{e}")
         return None, None, None
