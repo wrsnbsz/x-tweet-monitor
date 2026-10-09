@@ -3,13 +3,12 @@ import requests
 import json
 import os
 
-# ==========配置区 已经填好博主binancezh，并且切换poast镜像==========
+# ==========配置区 博主binancezh，更换新镜像==========
 USERNAME = "binancezh"
 DING_WEBHOOK = os.getenv("DING_WEBHOOK")
 RECORD_FILE = "last_id.json"
-# 已切换可用镜像
-# RSS_URL = f"https://nitter.net/{USERNAME}/rss"
-RSS_URL = f"https://nitter.poast.org/{USERNAME}/rss"
+# 新镜像
+RSS_URL = f"https://nitter.privacydev.net/{USERNAME}/rss"
 # ======================================================
 
 def get_newest_tweet():
